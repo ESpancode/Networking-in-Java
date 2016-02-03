@@ -1,12 +1,106 @@
-*.class
+	// File name is ClientCLass.java
+	// References from: http://www.tutorialspoint.com/java/java_networking.htm
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+	import java.net.*; //creating import through network
+	import java.io.*;  //creating import for Input/Output stream
 
-# Package Files #
-*.jar
-*.war
-*.ear
+	public class ClientCLass
+	{
+	  public static void main(String [] args)
+	  {
+	  String serverName = args[0];
+	      int port = Integer.parseInt(args[1]);	// pass message through client
+	      try
+	      {
+	         System.out.println("Connecting Server " + serverName +
+			 " on port " + port); 										//Connecting to server
+	         Socket client = new Socket(serverName, port);				//Creating server socket
+	         System.out.println("You are now connected " 
+			 + client.getRemoteSocketAddress());						//Connected to Server
+	         OutputStream outToServer = client.getOutputStream();		//Creating server output
+	         DataOutputStream out = new DataOutputStream(outToServer);
+	         out.writeUTF("Greetings From "
+	                      + client.getLocalSocketAddress());			//User or client will communicate
+	         InputStream inFromServer = client.getInputStream();
+	         DataInputStream in =
+	                        new DataInputStream(inFromServer);
+	         System.out.println("Server Simon says " + in.readUTF());   //Response from server
+	         client.close();
+	      }catch(IOException e)
+	      {
+	         e.printStackTrace();
+	      }
+	   }
+	}
+	
+// Code for the server class
+// References from: http://www.tutorialspoint.com/java/java_networking.htm
+// File name is ClientCLass
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
+import java.net.*; //creating import through network
+import java.io.*;  //creating import for Input/Output stream 
+
+//Opening server and creating Socket Server
+public class ServerCLass extends Thread
+{
+   private ServerSocket serverSocket; 									//Assigning socket server as private class
+   
+   public ServerCLass(int port) throws IOException
+   {
+      serverSocket = new ServerSocket(port);							//Assigning New Socket Server
+      serverSocket.setSoTimeout(10000);									//Setting Timeout and Limit
+   }
+
+	// Creating the running of server and using a while loop for this process
+	// Server connection between Client (ClientCLass) and Server (ServerCLass)
+   
+   public void run()
+   {
+      while(true)
+      {
+         try
+         {
+        	// Running Server and connecting to Client
+            System.out.println("Waiting for client on port " +
+            serverSocket.getLocalPort() + "...");
+            Socket server = serverSocket.accept();						//Connected to client thought Address
+            System.out.println("Just connected to "						
+                  + server.getRemoteSocketAddress());
+            DataInputStream in =										//Data input (Data goes in)
+                  new DataInputStream(server.getInputStream());			//Assigning Data Input Stream
+            System.out.println(in.readUTF());		
+            
+            // Closing Server and Finish sending data to Client
+            DataOutputStream out =										//Data Output (Data goes out)
+                 new DataOutputStream(server.getOutputStream()); 		//Assigning Data Output Stream
+            out.writeUTF(""
+              + server.getLocalSocketAddress() + "Adios!");				//Message for closing server		
+            server.close();												//Server will close
+         }catch(SocketTimeoutException s)
+         {
+            System.out.println("Sorry Socket Timed Out!"); 				//Server Timed Out
+            break;
+         }catch(IOException e)
+         {
+            e.printStackTrace();
+            break;
+         }
+      }
+   }
+   
+   
+ //Parsing data within server and creating a trace for Server
+  
+   public static void main(String [] args)
+   {
+      int port = Integer.parseInt(args[0]);  // Parsing data from server to port
+      try
+      {
+         Thread a = new ServerCLass(port);
+         a.start();
+      }catch(IOException e)
+      {
+         e.printStackTrace();
+      }
+   }
+}
